@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="32">
+	<rect width="16" height="32" fill="url(#gradient)"/>
+	<rect x="16" width="16" height="32" fill="url(#cc-gradient)"/>
+	<rect x="36.5" y="4.5" width="6" height="6" stroke="url(#cc-gradient)" fill="none"/>
+	<rect x="36.5" y="16.5" width="6" height="6" stroke="url(#keep)" fill="none"/>
+	<defs>
+		<!-- This gradient is just a solid color in disguise. It should be replaced with a solid color -->
+		<linearGradient id="gradient" x2="0" y2="32" gradientUnits="userSpaceOnUse">
+			<stop offset="0"/>
+			<stop offset="10" stop-color=""/>
+			<stop offset="20" stop-color="black"/>
+			<stop offset="30" stop-color="#000000"/>
+			<stop offset="40" stop-color="#000"/>
+			<!-- This stop is invisible and doesn't affect anything -->
+			<stop offset="55" stop-color="red"/>
+		</linearGradient>
+
+		<!-- With currentColor: Should also be replaced -->
+		<linearGradient id="cc-gradient" x2="0" y2="32" gradientUnits="userSpaceOnUse">
+			<stop offset="0"  stop-color="currentColor" stop-opacity="0.5"/>
+			<stop offset="40" stop-color="currentColor" stop-opacity=".5"/>
+			<!-- This stop is invisible and doesn't affect anything -->
+			<stop offset="55" stop-color="red"/>
+		</linearGradient>
+
+		<!-- Should be kept -->
+		<linearGradient id="keep" x2="0" y2="32" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="blue"/>
+			<stop offset="40" stop-color="currentColor"/>
+			<!-- This stop is invisible and doesn't affect anything -->
+			<stop offset="55" stop-color="red"/>
+		</linearGradient>
+
+	</defs>
+</svg>

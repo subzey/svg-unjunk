@@ -1,20 +1,23 @@
 {
 	"compilerOptions": {
+		"noEmit": true,
+		"strict": true,
+		"newLine": "lf",
 		"declaration": true,
-		"importHelpers": true,
-		"lib": [
-			"es2017",
-		],
+		"importHelpers": false,
 		"noEmitOnError": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitReturns": true,
 		"noUnusedLocals": true,
 		"sourceMap": false,
-		"strict": true,
-		"strictFunctionTypes": true,
 		"stripInternal": true,
 		"downlevelIteration": true,
-        "target": "es2017",
-        "module": "commonjs"
-	}
+		"rootDir": "src",
+		"outDir": "build",
+	},
+	"references": [
+		{ "path": "src/page" },
+		{ "path": "src/runner" },
+		{ "path": "src/scripts" }
+	]
 }

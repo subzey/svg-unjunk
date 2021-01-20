@@ -1,12 +1,42 @@
 {
   "private": true,
+  "name": "svg-unjunk",
+  "version": "0.1.0-rc.3",
+  "description": "Removes invisible and useless stuff from SVG code",
+  "license": "MIT",
+  "readme": "README.md",
   "dependencies": {
-    "@types/node": "^14.14.16",
     "puppeteer": "^5.5.0",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.1.3"
+    "yargs": "^16.2.0"
   },
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "bin": "dist/cli.js",
   "devDependencies": {
-    "@types/puppeteer": "^5.4.2"
+    "@types/node": "^14.14.16",
+    "@types/puppeteer": "^5.4.2",
+    "@types/xmldom": "^0.1.30",
+    "@types/yargs": "^15.0.12",
+    "@typescript-eslint/eslint-plugin": "^4.14.0",
+    "@typescript-eslint/parser": "^4.14.0",
+    "eslint": "^7.18.0",
+    "typescript": "^4.1.3",
+    "xmldom": "^0.4.0"
+  },
+  "scripts": {
+    "build": "tsc -b && node build/scripts/build",
+    "test": "node build/scripts/test && eslint src && node build/scripts/prod-ready"
+  },
+  "tags": [
+    "svg",
+    "clean"
+  ],
+  "author": {
+    "name": "Anton Khlynovskiy",
+    "email": "subzey@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subzey/svg-unjunk.git"
   }
 }

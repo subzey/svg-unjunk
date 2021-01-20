@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+	<!-- Element is clipped by itself: Clipping should be removed in lossy mode and kept in lossless mode -->
+	<circle cx="20" cy="20" r="16" clip-path="url(#clip-same)"/>
+	<!-- Clipping should be kept -->
+	<circle cx="60" cy="20" r="16" clip-path="url(#clip-smaller)"/>
+	<!-- Clipping should be removed -->
+	<circle cx="20" cy="60" r="16" clip-path="url(#clip-bigger)"/>
+	<!-- Clipping should be kept -->
+	<circle cx="60" cy="60" r="16" clip-path="url(#clip-intersect)"/>
+
+	<defs>
+		<clipPath id="clip-same">
+			<circle cx="20" cy="20" r="16"/>
+		</clipPath>
+		<clipPath id="clip-smaller">
+			<circle cx="60" cy="20" r="15.9"/>
+		</clipPath>
+		<clipPath id="clip-bigger">
+			<!--
+				KNOWN BUG: Using nonlinear path segmentss (e.g arcs or Bezier curves) changes the antialiasing in Chromium.
+				This leads to false-negatives when no-op clips cannot be removed.
+			-->
+			<rect x="0" y="40" width="40" height="40"/>
+		</clipPath>
+		<clipPath id="clip-intersect">
+			<rect x="45" y="45" width="30" height="30"/>
+		</clipPath>
+	</defs>
+</svg>

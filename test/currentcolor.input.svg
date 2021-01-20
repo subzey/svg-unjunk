@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+    <!-- The default fill color may be changed from outside. The fill attr should be kept even if the default fill is #000 -->
+    <rect width="9" height="9" fill="#000" stroke="#000"/>
+    <!-- CurrentColor fills (and strokes) may be changed from outside. The  -->
+    <rect x="9" width="9" height="9" fill="currentcolor" stroke="currentcolor"/>
+</svg>

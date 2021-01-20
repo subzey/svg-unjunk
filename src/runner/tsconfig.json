@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"lib": [
+			"DOM",
+			"es2019",
+		],
+		"target": "es2019",
+		"module": "commonjs",
+		"outDir": "../../build/runner"
+	},
+}

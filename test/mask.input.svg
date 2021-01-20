@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+	<!-- Element is masked by itself: Masking should be removed in lossy mode and kept in lossless mode -->
+	<circle cx="20" cy="20" r="16" mask="url(#mask-same)"/>
+	<!-- Masking should be kept -->
+	<circle cx="60" cy="20" r="16" mask="url(#mask-smaller)"/>
+	<!-- Masking should be removed -->
+	<circle cx="20" cy="60" r="16" mask="url(#mask-bigger)"/>
+	<!-- Masking should be kept -->
+	<circle cx="60" cy="60" r="16" mask="url(#mask-intersect)"/>
+
+	<defs>
+		<mask id="mask-same">
+			<circle fill="#fff" cx="20" cy="20" r="16"/>
+		</mask>
+		<mask id="mask-smaller">
+			<circle fill="#fff" cx="60" cy="20" r="15.9"/>
+		</mask>
+		<!--
+			Waaay too flaky.
+		<mask id="mask-bigger">
+			<rect fill="#fff" x="0" y="0" width="80" height="80"/>
+		</mask>
+		-->
+		<mask id="mask-intersect">
+			<rect fill="#fff" x="45" y="45" width="30" height="30"/>
+		</mask>
+	</defs>
+</svg>
