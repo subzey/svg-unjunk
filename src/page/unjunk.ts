@@ -123,7 +123,9 @@ class ImageComparator implements IImageComparator {
 class DefaultImageComparator extends ImageComparator {
 	protected _transformCode(svgCode: string): string {
 		const doc = parse(svgCode);
-		doc.documentElement.style.background = '#fff';
+		if (!doc.documentElement.style.background) {
+			doc.documentElement.style.background = '#fff';
+		}
 		return serialize(doc);
 	}
 }
@@ -131,9 +133,18 @@ class DefaultImageComparator extends ImageComparator {
 class RecoloredImageComparator extends ImageComparator {
 	protected _transformCode(svgCode: string): string {
 		const doc = parse(svgCode);
-		doc.documentElement.style.background = '#000';
-		doc.documentElement.style.fill = '#f0f';
-		doc.documentElement.style.color = '#ff0';
+
+		if (!doc.documentElement.style.background) {
+			doc.documentElement.style.background = '#000';
+		}
+
+		if (!(doc.documentElement.style.fill || doc.documentElement.getAttribute('fill') || '').trim()) {
+			doc.documentElement.style.fill = '#f0f';
+		}
+
+		if (!doc.documentElement.style.color) {
+			doc.documentElement.style.color = '#ff0';
+		}
 
 		return serialize(doc);
 	}
