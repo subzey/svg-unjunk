@@ -21,7 +21,7 @@ function getArgs(): CliArgs {
 			scale: { type: 'number', default: 2, description: 'How to scale SVG when rasterizing'},
 			debug: { type: 'boolean', default: false, description: 'Set to show puppeteer browser window' },
 		})
-		.argv
+		.parseSync()
 	);
 	return {
 		filenames: argv._,
