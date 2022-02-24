@@ -183,6 +183,16 @@ async function main() {
 	await Promise.all(testCases.map(testCase => runTestCase(svgUnjunk, testCase)));
 
 	svgUnjunk.destroy();
+
+	console.log('Testing double .destroy()...')
+	svgUnjunk.destroy();
+
+	console.log('Tesing sync .destroy()...');
+	new SvgUnjunk().destroy();
+	setTimeout(() => {
+		console.error('Node.js process haven\'t finished in reasonable time');
+		process.exit(1);
+	}, 5000).unref();
 }
 
 main().catch(reason => {
