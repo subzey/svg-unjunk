@@ -7,7 +7,10 @@ interface IImageComparator {
 }
 
 /** Returns the number of operations to backtrack if successfull */
-type CleaningOp = () => number;
+type CleaningOp = () => {
+	backtrack: number;
+	forceLossless: boolean;
+};
 
 class ImageComparator implements IImageComparator {
 	private _baseScale: number;
@@ -199,11 +202,14 @@ function * inlineGradient(grad: SVGLinearGradientElement | SVGRadialGradientElem
 		grad.remove();
 		// We've changed the document significantly and now have to
 		// backtrack back to the start
-		return Infinity;
+		return {
+			backtrack: Infinity,
+			forceLossless: false,
+		};
 	}
 }
 
-function * cleaningOps(parentNode: Document | Element): IterableIterator<() => void> {
+function * cleaningOps(parentNode: Document | Element): IterableIterator<CleaningOp> {
 	for (const child of Array.from(parentNode.childNodes)) {
 		// // Leave leading comments
 		// if (child.nodeType === Node.COMMENT_NODE && parentNode.nodeType !== Node.ELEMENT_NODE && parentNode.firstChild === child) {
@@ -213,7 +219,10 @@ function * cleaningOps(parentNode: Document | Element): IterableIterator<() => v
 		if (parentNode.nodeType === Node.ELEMENT_NODE || child.nodeType !== Node.ELEMENT_NODE) {
 			yield () => {
 				child.remove();
-				return 0;
+				return {
+					backtrack: 0,
+					forceLossless: false,
+				};
 			};
 		}
 
@@ -232,21 +241,30 @@ function * cleaningOps(parentNode: Document | Element): IterableIterator<() => v
 			}
 			yield () => {
 				el.removeAttribute(attrName);
-				return 0;
+				return {
+					backtrack: 0,
+					forceLossless: attrName.startsWith('stroke-'),
+				};
 			}
 		}
 
 		for (const className of Array.from(el.classList)) {
 			yield () => {
 				el.classList.remove(className);
-				return 0;
+				return {
+					backtrack: 0,
+					forceLossless: false,
+				};
 			}
 		}
 
 		for (const styleProp of Array.from(el.style)) {
 			yield () => {
 				el.style.removeProperty(styleProp);
-				return 0;
+				return {
+					backtrack: 0,
+					forceLossless: styleProp.startsWith('stroke-'),
+				};
 			}
 		}
 
@@ -257,7 +275,10 @@ function * cleaningOps(parentNode: Document | Element): IterableIterator<() => v
 		if (unwrapElements.has(el.nodeName) && parentNode.nodeType === Node.ELEMENT_NODE) {
 			yield () => {
 				el.replaceWith(...Array.from(el.childNodes));
-				return 1;
+				return {
+					backtrack: 1,
+					forceLossless: false,
+				};
 			}
 		}
 	}
@@ -337,7 +358,7 @@ window.unjunk = async function unjunk(svgCode: string, options: Partial<Options>
 			skipOps = opNumber + 1;
 			// console.log(op);
 			try {
-				const backtrack = op();
+				const { backtrack, forceLossless } = op();
 				const newSvgCode = serialize(doc);
 				if (newSvgCode === svgCode) {
 					// Operation changed nothing, we can continue this loop
@@ -346,7 +367,7 @@ window.unjunk = async function unjunk(svgCode: string, options: Partial<Options>
 
 				// console.log(newSvgCode);
 
-				await assertVisuallySame(newSvgCode, svgCode, comparators, lossless);
+				await assertVisuallySame(newSvgCode, svgCode, comparators, lossless || forceLossless);
 
 				// console.log('\tAccepted')
 				svgCode = newSvgCode;
