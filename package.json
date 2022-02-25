@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "svg-unjunk",
-  "version": "0.2.0-rc.1",
+  "version": "0.2.0-rc.2",
   "description": "Removes invisible and useless stuff from SVG code",
   "license": "MIT",
   "readme": "README.md",
