@@ -12,49 +12,32 @@ type CleaningOp = () => {
 	forceLossless: boolean;
 };
 
-class ImageComparator implements IImageComparator {
-	private _baseScale: number;
-	private _imageCache: Map<string, Promise<HTMLImageElement>> = new Map();
-	private _imageDataCache: Map<string, Promise<ImageData>> = new Map();
+class SvgRasterizer {
+	private _imagePromise: Promise<HTMLImageElement>;
+	private _scaledImageDataCache: Map<number, Promise<ImageData>> = new Map();
 
-	constructor(baseScale: number) {
-		this._baseScale = baseScale;
+	public constructor(svgCode: string) {
+		this._imagePromise = this._createImage(svgCode);
 	}
 
-	private async _createImage(svgCode: string): Promise<HTMLImageElement> {
-		const transformed = this._transformCode(svgCode);
-		const url = URL.createObjectURL(
-			new Blob([transformed], { type: 'image/svg+xml' })
-		);
-		try {
-			return await new Promise((r, rj) => {
-				const im = new Image;
-				im.style.imageRendering = 'optimizeQuality';
-				im.onload = () => r(im);
-				im.onerror = rj;
-				im.src = url;
-			});
-		} finally {
-			URL.revokeObjectURL(url);
+	public getImageData(scale: number): Promise<ImageData> {
+		let imageDataPromise = this._scaledImageDataCache.get(scale);
+		if (!imageDataPromise) {
+			imageDataPromise = this._createImageData(scale);
+			this._scaledImageDataCache.set(scale, imageDataPromise);
 		}
+		return imageDataPromise;
 	}
 
-	private _getImage(svgCode: string): Promise<HTMLImageElement> {
-		let imagePromise = this._imageCache.get(svgCode);
-		if (!imagePromise) {
-			imagePromise = this._createImage(svgCode);
-			this._imageCache.set(svgCode, imagePromise);
-		}
-		return imagePromise;
-	}
+	private async _createImageData(scale: number): Promise<ImageData> {
+		const image = await this._imagePromise;
 
-	private async _getImageData(image: HTMLImageElement, scale: number): Promise<ImageData> {
 		// TODO: Use the shared canvas
 		const canvas = document.createElement('canvas');
 		// No alpha no problems
 		const ctx = canvas.getContext('2d', { alpha: false }) as CanvasRenderingContext2D; // Let it crash
-		const width = Math.ceil(image.naturalWidth * this._baseScale * scale);
-		const height = Math.ceil(image.naturalHeight * this._baseScale * scale);
+		const width = Math.ceil(image.naturalWidth * scale);
+		const height = Math.ceil(image.naturalHeight * scale);
 
 		// If the image is drawn directly on canvas, the rasterization may differ
 		// between headless and non-headless puppeteer modes
@@ -74,16 +57,51 @@ class ImageComparator implements IImageComparator {
 		return ctx.getImageData(0, 0, width, height);
 	}
 
-	private _codeToImageData(svgCode: string, scale: number): Promise<ImageData> {
-		const cacheKey = `${scale} ${svgCode}`;
-		let imageDataPromise = this._imageDataCache.get(cacheKey);
-		if (!imageDataPromise) {
-			imageDataPromise = (this._getImage(svgCode)
-				.then((image: HTMLImageElement) => this._getImageData(image, scale))
-			);
-			this._imageDataCache.set(cacheKey, imageDataPromise);
+	private async _createImage(svgCode: string): Promise<HTMLImageElement> {
+		const url = URL.createObjectURL(
+			new Blob([svgCode], { type: 'image/svg+xml' })
+		);
+		try {
+			return await new Promise((r, rj) => {
+				const im = new Image;
+				im.style.imageRendering = 'optimizeQuality';
+				im.onload = () => r(im);
+				im.onerror = rj;
+				im.src = url;
+			});
+		} finally {
+			URL.revokeObjectURL(url);
 		}
-		return imageDataPromise;
+	}
+}
+
+class ImageComparator implements IImageComparator {
+	private _baseScale: number;
+	private _rasterizerCache: Map<string, SvgRasterizer> = new Map();
+
+	public constructor(baseScale: number) {
+		this._baseScale = baseScale;
+	}
+
+	/**
+	 * Compare two svg codes as images and return some numeric score.
+	 * @return A numeric score. Zero if images are identical, positive if not.
+	 */
+	public async compare(svgCodeA: string, svgCodeB: string, scale: number): Promise<number> {
+		const rasterizerA = this._rasterizerCache.get(svgCodeA) || new SvgRasterizer(this._transformCode(svgCodeA));
+		const rasterizerB = this._rasterizerCache.get(svgCodeB) || new SvgRasterizer(this._transformCode(svgCodeB));
+
+		const [imageDataA, imageDataB] = await Promise.all([
+			rasterizerA.getImageData(scale * this._baseScale),
+			rasterizerB.getImageData(scale * this._baseScale),
+		]);
+
+		// Rebuild the cache so it won't fill up with useless values
+		this._rasterizerCache.clear();
+		this._rasterizerCache.set(svgCodeA, rasterizerA);
+		this._rasterizerCache.set(svgCodeB, rasterizerB);
+
+		return this._compareImageData(imageDataA, imageDataB);
 	}
 
 	protected _transformCode(svgCode: string): string {
@@ -108,18 +126,6 @@ class ImageComparator implements IImageComparator {
 			);
 		}
 		return difference;
-	}
-
-	/**
-	 * Compare two svg codes as images and return some numeric score.
-	 * @return A numeric score. Zero if images are identical, positive if not.
-	 */
-	public async compare(svgCodeA: string, svgCodeB: string, scale: number): Promise<number> {
-		const [imageDataA, imageDataB] = await Promise.all([
-			this._codeToImageData(svgCodeA, scale),
-			this._codeToImageData(svgCodeB, scale),
-		]);
-		return this._compareImageData(imageDataA, imageDataB);
 	}
 }
 
