@@ -292,23 +292,28 @@ function * cleaningOps(parentNode: Document | Element): IterableIterator<Cleanin
 
 function parse(svgCode: string): XMLDocument {
 	const doc = new DOMParser().parseFromString(svgCode, 'image/svg+xml');
-	if (doc.documentElement.namespaceURI === 'http://www.w3.org/2000/svg' && doc.documentElement.nodeName === 'svg') {
-		return doc;
-	}
-	let reason: string | undefined;
-	if (doc.documentElement.nodeName === 'svg') {
-		reason = 'The namespace should be "http://www.w3.org/2000/svg"';
-	} else if (doc.documentElement.nodeName.toLowerCase() === 'svg') {
-		reason = 'The document element tag should be "svg" in lowercase';
-	} else {
-		// Chromium way
+	if (doc.documentElement.namespaceURI !== 'http://www.w3.org/2000/svg') {
 		const errElement = doc.querySelector('parsererror > h3:first-child + div');
 		if (errElement && errElement.textContent) {
-			reason = errElement.textContent.slice(0, 256);
+			throw new SyntaxError(`SVG parse error: ${errElement.textContent.slice(0, 256)}`);
 		}
-	}
-	throw new SyntaxError(`SVG parse error: ${reason || 'Unknown error'}`);
 
+		if (doc.documentElement.namespaceURI !== null) {
+			throw new SyntaxError(`SVG parse error: The namespace should be "http://www.w3.org/2000/svg"`);
+		}
+
+		// Try to recover.
+		// Setting an xmlns attribute doesn't change the document flavor
+		// We have to re-parse it
+		doc.documentElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+		return parse(serialize(doc));
+	}
+
+	if (doc.documentElement.nodeName !== 'svg') {
+		throw new SyntaxError(`SVG parse error: The document element tag should be "svg" in lowercase`);
+	}
+
+	return doc;
 }
 
 function serialize(doc: XMLDocument): string {
