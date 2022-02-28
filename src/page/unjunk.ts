@@ -351,9 +351,14 @@ window.unjunk = async function unjunk(svgCode: string, options: Partial<Options>
 	const lossless = Boolean(options.lossless);
 
 	const comparators: readonly IImageComparator[] = [new DefaultImageComparator(scale), new RecoloredImageComparator(scale)];
+	const originalAttrs = getAttrs(svgCode);
 
 	let skipOps = 0;
-	for (let i = 0; i < 1000; i++) {
+	outer: for (let i = 0; i < 1000; i++) {
+		if (i >= 1000) {
+			console.log('Bailing out');
+			break;
+		}
 		// console.log('starting over');
 		const doc = parse(svgCode);
 		const opGenerator = cleaningOps(doc);
@@ -361,7 +366,7 @@ window.unjunk = async function unjunk(svgCode: string, options: Partial<Options>
 		for (let opNumber = 0; ; opNumber++) {
 			const { done, value: op } = opGenerator.next();
 			if (done) {
-				return svgCode
+				break outer;
 			}
 			if (opNumber < skipOps) {
 				continue;
@@ -390,7 +395,62 @@ window.unjunk = async function unjunk(svgCode: string, options: Partial<Options>
 		}
 	}
 
-	console.log('Bailing out');
-
+	// Chromium DOM implementation always sets the xmlns attribute first
+	// Restore the original order to get a minimal diff
+	svgCode = fixAttrOrder(svgCode, originalAttrs);
 	return svgCode;
+}
+
+
+interface PhysAttr {
+	name: string,
+	raw: string,
+	start: number,
+	end: number,
+}
+
+/**
+ * It's not a spec compliant parser!
+ * But it's good enough to reorder attributes.
+ */
+function getAttrs(svgCode: string): PhysAttr[] {
+    const attrs: PhysAttr[] = [];
+    const start = svgCode.indexOf('<svg');
+    if (start === -1) {
+        return attrs;
+    }
+
+    const reAttr = /\s+([^\s<>&'"]+)\s*=\s*("|')[^]*?\2/igy;
+    reAttr.lastIndex = start + 4;
+	for (let match = reAttr.exec(svgCode); match !== null; match = reAttr.exec(svgCode)) {
+        attrs.push({
+            name: match[1],
+            raw: match[0],
+			start: match.index,
+			end: reAttr.lastIndex,
+        });
+	}
+
+	return attrs;
+}
+
+function fixAttrOrder(svgCode: string, originalAttrs: readonly PhysAttr[]): string {
+	const newAttrs = getAttrs(svgCode);
+	console.log(newAttrs, originalAttrs);
+	if (newAttrs.length === 0) {
+		return svgCode;
+	}
+	const sliceStart = newAttrs[0].start;
+	const sliceEnd = newAttrs[newAttrs.length - 1].end;
+
+	const attrOrder: Map<string, number> = new Map();
+	for (let i = 0; i < newAttrs.length; i++) {
+		attrOrder.set(newAttrs[i].name, i);
+	}
+	for (let i = 0; i < originalAttrs.length; i++) {
+		attrOrder.set(originalAttrs[i].name, newAttrs.length + i);
+	}
+
+	newAttrs.sort((a: PhysAttr, b: PhysAttr) => (attrOrder.get(a.name) as number) - (attrOrder.get(b.name) as number));
+	return svgCode.slice(0, sliceStart) + newAttrs.map((physAttr: PhysAttr) => physAttr.raw).join('') + svgCode.slice(sliceEnd);
 }
