@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="20">
+	<defs>
+		<circle cx="10" cy="10" r="10" id="circ"/>
+	</defs>
+	<use fill="red" href="#circ" x="0"/>
+	<use fill="yellow" href="#circ" x="20"/>
+	<use fill="green" href="#circ" x="40"/>
+</svg>

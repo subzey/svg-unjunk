@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="60" height="20">
+	<defs>
+		<circle cx="10" cy="10" r="10" id="circ"/>
+	</defs>
+
+	<!-- xlink:href should be replaced with href and the attr order should be preserved -->
+	<use fill="red" xlink:href="#circ" class="useless-class" x="0"/>
+	<use fill="yellow" xlink:href="#circ" class="useless-class" x="20"/>
+	<use fill="green" xlink:href="#circ" class="useless-class" x="40"/>
+</svg>

@@ -240,6 +240,28 @@ function * cleaningOps(parentNode: Document | Element): IterableIterator<Cleanin
 
 		yield * cleaningOps(el);
 
+		if (el.hasAttributeNS('http://www.w3.org/1999/xlink', 'href')) {
+			yield () => {
+				for (const attrNode of Array.from(el.attributes)) {
+					if (attrNode.nodeValue === null) {
+						// Quite unlikely with XML
+						continue;
+					}
+					el.removeAttribute(attrNode.name);
+					if (attrNode.namespaceURI === 'http://www.w3.org/1999/xlink' && attrNode.localName === 'href') {
+						el.setAttribute('href', attrNode.nodeValue);
+					} else {
+						// Replace the attribute with itself: keep the attr order
+						el.setAttribute(attrNode.name, attrNode.nodeValue);
+					}
+				}
+				return {
+					backtrack: 0,
+					forceLossless: false,
+				};
+			}
+		}
+
 		const attrNames = sortAttrs(Array.from(el.attributes, attr => attr.name));
 		for (const attrName of attrNames) {
 			if (doNotRemoveAttrs.has(attrName)) {
