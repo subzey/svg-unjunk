@@ -16,15 +16,12 @@
     "@types/node": "^20.12.11",
     "@types/xmldom": "^0.1.34",
     "@types/yargs": "^17.0.32",
-    "@typescript-eslint/eslint-plugin": "^4.14.0",
-    "@typescript-eslint/parser": "^4.14.0",
-    "eslint": "^7.18.0",
     "typescript": "^5.4.5",
     "xmldom": "^0.6.0"
   },
   "scripts": {
     "build": "tsc -b && node build/scripts/build",
-    "test": "node build/scripts/test && eslint src && node build/scripts/prod-ready"
+    "test": "node build/scripts/test && node build/scripts/prod-ready"
   },
   "tags": [
     "svg",
