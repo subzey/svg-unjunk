@@ -1,3 +1,7 @@
+## 0.2.1
+
+Updated dependecies.
+
 ## 0.2.0
 
 *Breaking:* Fixed some `fill="none"` issues. Unjunk now assumes that if you have `fill`, `color`, or `background` set explicitly then you don't want to override it.
