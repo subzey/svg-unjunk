@@ -17,8 +17,12 @@
 
 		<!-- With currentColor: Should also be replaced -->
 		<linearGradient id="cc-gradient" x2="0" y2="32" gradientUnits="userSpaceOnUse">
-			<stop offset="0"  stop-color="currentColor" stop-opacity="0.5"/>
-			<stop offset="40" stop-color="currentColor" stop-opacity=".5"/>
+			<!--
+				Previously the stop-opacity was 0.5.
+				But Chrome became inconsistent in that 50% should be 127 or 128.
+			-->
+			<stop offset="0"  stop-color="currentColor" stop-opacity="0.6"/>
+			<stop offset="40" stop-color="currentColor" stop-opacity=".6"/>
 			<!-- This stop is invisible and doesn't affect anything -->
 			<stop offset="55" stop-color="red"/>
 		</linearGradient>
