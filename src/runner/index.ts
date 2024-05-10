@@ -41,6 +41,7 @@ class PagePool {
 
 		this._browser = puppeteer.launch({
 			headless: options.headless,
+			args: ['--no-sandbox'],
 		});
 	}
 
@@ -146,7 +147,7 @@ export class SvgUnjunk {
 	 */
 	public async process(svgCode: string, options?: Options): Promise<string>;
 	public async process(svgCode: unknown, options: ActuallyUnknown<Options>): Promise<string> {
-		const typedOptions: puppeteer.Serializable = {};
+		const typedOptions: Options = {};
 		if (options && options.scale !== undefined) {
 			const scale = Number(options.scale);
 			if (scale > 0) {
