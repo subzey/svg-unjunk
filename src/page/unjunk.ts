@@ -166,6 +166,7 @@ const doNotRemoveAttrs = new Set([
 	'x', 'y', 'x1', 'x2', 'y1', 'y2',
 	'd',
 	'offset', 'stop-color',
+	'filterUnits',
 ]);
 const unwrapElements = new Set(['g', 'svg']);
 

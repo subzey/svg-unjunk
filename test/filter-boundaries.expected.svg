@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80">
+	<circle cx="40" cy="40" r="10" fill="red" filter="url(#filter)"/>
+	<filter
+		id="filter"
+		x="10" y="10" width="60" height="60"
+		filterUnits="userSpaceOnUse"
+	>
+		<feGaussianBlur stdDeviation="3"/>
+	</filter>
+</svg>
