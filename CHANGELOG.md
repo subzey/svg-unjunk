@@ -1,3 +1,7 @@
+## 0.2.2
+
+Fixed: `filterUnits` could be removed causing the resulting SVG be super slow in Safari.
+
 ## 0.2.1
 
 Updated dependecies.
